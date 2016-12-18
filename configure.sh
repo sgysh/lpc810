@@ -1,7 +1,7 @@
 #!/bin/bash
 
 USAGE="
-USAGE: ${0} <example_name>
+USAGE: ${0} <example_directory_name>
 "
 
 EXAMPLE_DIR_NAME="examples"
