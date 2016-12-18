@@ -1,0 +1,52 @@
+/****************************************************************************
+ * ld.script
+ *
+ *   Copyright (c) 2016 Yoshinori Sugino
+ *   This software is released under the MIT License.
+ ****************************************************************************/
+MEMORY
+{
+	flash (rx) : ORIGIN = 0x00000000, LENGTH = 4K
+	sram  (rw) : ORIGIN = 0x10000000, LENGTH = 1K
+}
+
+OUTPUT_ARCH(arm)
+ENTRY(__start)
+
+EXTERN(nmi_handler)
+EXTERN(hardfault_handler)
+
+SECTIONS
+{
+	.text : {
+		_stext = ABSOLUTE(.);
+		KEEP(*(.vectors))
+		*(.text .text.*)
+		_etext = ABSOLUTE(.);
+	} > flash
+
+	_data_lma_start = ABSOLUTE(LOADADDR(.data));
+
+	.data : {
+		_sdata = ABSOLUTE(.);
+		*(.data .data.*)
+		_edata = ABSOLUTE(.);
+	} > sram AT > flash
+
+	.bss : {
+		_sbss = ABSOLUTE(.);
+		*(.bss .bss.*)
+		_ebss = ABSOLUTE(.);
+	} > sram
+
+	sp_main = ORIGIN(sram) + LENGTH(sram) - 4;
+	/*
+	 * The reserved Cortex-M0+ exception vector location 7 (offset 0x0000 001C in the vector
+	 * table) should contain the 2’s complement of the check-sum of table entries 0 through 6.
+	 * This causes the checksum of the first 8 table entries to be 0. The bootloader code
+	 * checksums the first 8 locations in sector 0 of the flash. If the result is 0, then execution
+	 * control is transferred to the user code.
+	 */
+	nxp_checksum = 0 - (sp_main + (__start + 1) + (nmi_handler + 1) + (hardfault_handler + 1));
+}
+
