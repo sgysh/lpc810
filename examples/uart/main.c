@@ -5,7 +5,7 @@
  *   This software is released under the MIT License.
  ****************************************************************************/
 #include "lpc810.h"
-#include "uart.h"
+#include "romapi.h"
 
 int main() {
   uint8_t uart_work[UART_INSTANCE_SIZE];

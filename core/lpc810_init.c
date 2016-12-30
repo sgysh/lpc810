@@ -74,6 +74,11 @@ static void sys_clk_init() {
   val |= SYSCON_SYSAHBCLKCTRL_UART0;
   putreg32(val, SYSCON_SYSAHBCLKCTRL);
 #endif
+#ifdef CONFIG_ENABLE_CLOCK_I2C
+  val = getreg32(SYSCON_SYSAHBCLKCTRL);
+  val |= SYSCON_SYSAHBCLKCTRL_I2C;
+  putreg32(val, SYSCON_SYSAHBCLKCTRL);
+#endif
 }
 
 static void clk_init() {
@@ -82,6 +87,21 @@ static void clk_init() {
   main_clk_init();
 
   sys_clk_init();
+}
+
+static void reset_ctrl() {
+  uint32_t val;
+
+#ifdef CONFIG_ENABLE_CLOCK_UART0
+  val = getreg32(SYSCON_PRESETCTRL);
+  val |= 1 << SYSCON_PRESETCTRL_UART0_SHIFT;
+  putreg32(val, SYSCON_PRESETCTRL);
+#endif
+#ifdef CONFIG_ENABLE_CLOCK_I2C
+  val = getreg32(SYSCON_PRESETCTRL);
+  val |= 1 << SYSCON_PRESETCTRL_I2C_SHIFT;
+  putreg32(val, SYSCON_PRESETCTRL);
+#endif
 }
 
 static void irq_init() {
@@ -94,7 +114,9 @@ static void irq_init() {
 }
 
 enum function_t {
-  FUNCTION_U0_TXD
+  FUNCTION_U0_TXD,
+  FUNCTION_I2C0_SDA,
+  FUNCTION_I2C0_SCL
 };
 
 static void set_mux(const enum function_t ftype, const uint32_t pio_num) {
@@ -106,6 +128,14 @@ static void set_mux(const enum function_t ftype, const uint32_t pio_num) {
       pin   = (uint32_t *)SWM_PINASSIGN0;
       shift = SWM_PINASSIGN0_U0_TXD_SHIFT;
       break;
+    case FUNCTION_I2C0_SDA:
+      pin   = (uint32_t *)SWM_PINASSIGN7;
+      shift = SWM_PINASSIGN0_I2C0_SDA_SHIFT;
+      break;
+    case FUNCTION_I2C0_SCL:
+      pin   = (uint32_t *)SWM_PINASSIGN8;
+      shift = SWM_PINASSIGN0_I2C0_SCL_SHIFT;
+      break;
     default:
       return;
   }
@@ -116,14 +146,41 @@ static void set_mux(const enum function_t ftype, const uint32_t pio_num) {
   putreg32(val, pin);
 }
 
+/*
+         _____          _______
+         RESET/PIO0_5 1|  `-'  |8 PIO0_0/ACMP_I1/TDO
+                 ____  |       |
+   PIO0_4/WAKEUP/TRST 2|       |7 VSS
+                       |       |
+     SWCLK/PIO0_3/TCK 3|       |6 VDD
+                       |       |
+     SWDIO/PIO0_2/TMS 4|_______|5 PIO0_1/ACMP_I2/CLKIN/TDI
+
+   8:
+   7: VSS
+   6: VDD
+   5:
+   4: SWDIO
+   3: SWCLK
+   2: _____
+   1: RESET
+ */
 static void mux_init() {
-#if (CONFIG_SWM_U0_TXD_PIO >= 0) && (CONFIG_SWM_U0_TXD_PIO < 6)
+#ifdef CONFIG_SWM_U0_TXD_PIO
   set_mux(FUNCTION_U0_TXD, CONFIG_SWM_U0_TXD_PIO);
+#endif
+#ifdef CONFIG_SWM_I2C0_SDA_PIO
+  set_mux(FUNCTION_I2C0_SDA, CONFIG_SWM_I2C0_SDA_PIO);
+#endif
+#ifdef CONFIG_SWM_I2C0_SCL_PIO
+  set_mux(FUNCTION_I2C0_SCL, CONFIG_SWM_I2C0_SCL_PIO);
 #endif
 }
 
 void mcu_init() {
   clk_init();
+
+  reset_ctrl();
 
   irq_init();
 
