@@ -8,7 +8,7 @@
 #include "romapi.h"
 
 int main() {
-  uint8_t i2c_work[I2C_WORK_SIZE];
+  uint32_t i2c_work[I2C_WORK_SIZE/4];
   uint8_t buf[3];
   volatile uint16_t temp;
   I2C_PARAM param;
@@ -18,7 +18,7 @@ int main() {
   buf[0] = 0x48;
 
   i2c_handle = i2c_setup(I2C_BASE, i2c_work);
-  i2c_set_bitrate(i2c_handle, SYS_CLK, 50000);
+  i2c_set_bitrate(i2c_handle, SYS_CLK, 100000);
   while (1) {
     i2c_set_timeout(i2c_handle, 1000000);
 

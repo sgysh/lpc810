@@ -187,7 +187,7 @@ typedef struct _ROM_API {
 #define uart_put_line     LPC_UART_API->uart_put_line
 #define uart_isr          LPC_UART_API->uart_isr
 
-#define I2C_WORK_SIZE (96)      /* TODO: use i2c_get_mem_size() */
+#define I2C_WORK_SIZE (96 + 4)  /* TODO: use i2c_get_mem_size(), +4: workaround */
 #define SYS_CLK (24*1000*1000)  /* TODO */
 
 #define UART_INSTANCE_SIZE (40)  /* TODO: use uart_get_mem_size() */
