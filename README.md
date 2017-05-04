@@ -1,5 +1,5 @@
 # code for LPC810
-The program work on the LPC810 (LPC810M021FN8).
+The program work on the LPC810 (LPC810M021FN8).  
 The LPC810 is an ARM Cortex-M0+ based, low-cost 32-bit MCU from NXP.
 
 by Yoshinori Sugino
