@@ -11,7 +11,7 @@ LDFLAGS = -nostartfiles -g
 
 all : $(TARGET)
 
-.PHONY : all clean
+.PHONY : all clean install_ft232h
 
 $(TARGET) : $(OBJS) ld.script Makefile
 	$(CC) $(CFLAGS) $(LDFLAGS) -T ld.script -o $(TARGET) $(OBJS)
@@ -19,4 +19,10 @@ $(TARGET) : $(OBJS) ld.script Makefile
 clean :
 	rm -f $(TARGET)
 	rm -f $(OBJS)
+
+install_ft232h :
+	sudo openocd -f /usr/local/share/openocd/scripts/interface/ftdi/ft232h-with-resistor.cfg \
+	  -f /usr/local/share/openocd/scripts/target/lpc8xx.cfg \
+	  -c init -c "reset halt" -c "adapter_khz 300" -c "flash write_image erase firm.elf" \
+	  -c resume -c halt -c "verify_image firm.elf" -c exit
 
