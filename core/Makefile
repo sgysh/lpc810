@@ -6,7 +6,7 @@ TARGET = firm.elf
 SRCS = $(wildcard *.c)
 OBJS = $(SRCS:.c=.o)
 
-CFLAGS  = -Wall -O0 -g -fomit-frame-pointer -mcpu=cortex-m0plus -mthumb -mfloat-abi=soft
+CFLAGS  = -Wall -O0 -g -fomit-frame-pointer -mcpu=cortex-m0plus -mthumb -mfloat-abi=soft -nostdlib -ffreestanding
 LDFLAGS = -nostartfiles -g
 
 all : $(TARGET)
